@@ -14,3 +14,9 @@ Ejemplo de uso:
 - `images/05-screenshot1.jpg` → primera captura (galería)
 
 Después de añadir/actualizar imágenes, recarga la página para ver los cambios.
+
+Cómo usar tu logo (archivo adjunto):
+
+- Guarda el archivo del logo que adjuntaste como `images/logo.png` dentro de este proyecto.
+- Si prefieres otro formato, puedes usar `images/logo.jpg` o `images/logo.webp`, pero actualiza el `src` en los archivos HTML si cambias el nombre.
+- El logo ya está referenciado en las cabeceras y enlaza al inicio. En pantallas pequeñas, sólo se mostrará el icono.
