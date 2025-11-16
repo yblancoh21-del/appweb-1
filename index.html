@@ -28,7 +28,9 @@
         </div>
       </div>
       <div class="hero-right">
-        <div class="cover-placeholder">IMAGEN</div>
+        <div class="cover-placeholder">
+          <img src="images/01-cover.jpg" alt="Cover" class="cover-img">
+        </div>
       </div>
     </section>
 
@@ -71,27 +73,46 @@
 
         <div class="cards-row">
           <div class="product-card">
-            <div class="art">IMG</div>
+            <div class="art"><img src="images/02-orbital.jpg" alt="Orbital Skirmish" class="card-art"></div>
             <div class="info">
               <div class="p-title">Orbital Skirmish</div>
               <div class="p-price">$2.00</div>
             </div>
           </div>
           <div class="product-card">
-            <div class="art">IMG</div>
+            <div class="art"><img src="images/03-mecha.jpg" alt="Mecha Armor" class="card-art"></div>
             <div class="info">
               <div class="p-title">Mecha Armor</div>
               <div class="p-price">$3.99</div>
             </div>
           </div>
           <div class="product-card">
-            <div class="art">IMG</div>
+            <div class="art"><img src="images/04-pass.jpg" alt="Season Pass" class="card-art"></div>
             <div class="info">
               <div class="p-title">Season Pass</div>
               <div class="p-price">$9.99</div>
             </div>
           </div>
         </div>
+        
+        <!-- Galería ordenada -->
+        <section class="gallery-section">
+          <h3>Galería de imágenes</h3>
+          <div class="gallery" id="gallery">
+            <div class="gallery-item" data-order="1">
+              <img src="images/05-screenshot1.jpg" alt="Screenshot 1">
+              <div class="caption">Planeta Aether</div>
+            </div>
+            <div class="gallery-item" data-order="2">
+              <img src="images/06-screenshot2.jpg" alt="Screenshot 2">
+              <div class="caption">Combate orbital</div>
+            </div>
+            <div class="gallery-item" data-order="3">
+              <img src="images/07-screenshot3.jpg" alt="Screenshot 3">
+              <div class="caption">Estación espacial</div>
+            </div>
+          </div>
+        </section>
       </section>
     </section>
   </main>
@@ -99,5 +120,17 @@
   <footer class="site-footer">
     <div>© 2025 Gamer's Hub · Todos los derechos reservados</div>
   </footer>
+  <script>
+    // Ordena la galería según el atributo data-order
+    (function(){
+      try{
+        const g = document.getElementById('gallery');
+        if(!g) return;
+        const items = Array.from(g.children);
+        items.sort((a,b)=> (parseInt(a.dataset.order)||0) - (parseInt(b.dataset.order)||0));
+        items.forEach(i=>g.appendChild(i));
+      }catch(e){console.warn(e)}
+    })();
+  </script>
 </body>
 </html>
