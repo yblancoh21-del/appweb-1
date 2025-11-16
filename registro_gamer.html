@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Registro - Gamer's Hub</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="centered-page">
+  <header class="topbar small">
+    <div class="logo">GAMER'S HUB</div>
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="login_gamer.html" class="btn small">Iniciar sesión</a>
+    </nav>
+  </header>
+
+  <main class="auth-card">
+    <h2>Crear cuenta</h2>
+    <form onsubmit="event.preventDefault(); location.href='login_gamer.html'">
+      <label>Usuario</label>
+      <input type="text" placeholder="tu_usuario" required>
+      <label>Email</label>
+      <input type="email" placeholder="correo@ejemplo.com" required>
+      <label>Contraseña</label>
+      <input type="password" placeholder="********" required>
+      <button class="btn big" type="submit">Registrarme</button>
+    </form>
+    <div class="auth-links">
+      <a href="login_gamer.html">Ya tengo cuenta</a>
+      <a href="index.html" class="muted">Volver al inicio</a>
+    </div>
+  </main>
+</body>
+</html>
