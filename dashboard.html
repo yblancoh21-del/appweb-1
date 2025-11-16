@@ -14,16 +14,19 @@
         <span class="brand-text">GAMER'S HUB</span>
       </a>
     </div>
-    <nav class="nav">
-      <a href="index.html">Inicio</a>
-      <a href="dashboard.html" class="active">Tienda</a>
-      <a href="login_gamer.html">Mi cuenta</a>
-      <a href="index.html" class="btn small">Salir</a>
+    <div class="header-actions">
+      <button id="menu-btn" class="menu-btn" aria-expanded="false" aria-controls="menu-list">Menu ▾</button>
+      <nav id="menu-list" class="menu-list" hidden>
+        <a href="index.html">Inicio</a>
+        <a href="dashboard.html" class="active">Tienda</a>
+        <a href="login_gamer.html">Mi cuenta</a>
+        <a href="index.html" class="btn small">Salir</a>
+      </nav>
       <button id="cart-btn" class="cart-btn" aria-label="Ver carrito">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6h15l-1.5 9h-12L6 6z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1" fill="currentColor"/><circle cx="18" cy="20" r="1" fill="currentColor"/></svg>
         <span id="cart-count" class="cart-count">0</span>
       </button>
-    </nav>
+    </div>
   </header>
 
   <main class="container">
@@ -53,7 +56,7 @@
         <div class="store-row">
           <!-- example product cards -->
           <article class="store-card" data-id="baldurs" data-title="BALDUR'S GATE 3" data-price="59.99" data-image="images/baldurs-gate-3-product.jpg">
-            <div class="card-art">IMG</div>
+            <div class="card-art"><img src="images/baldurs-gate-3-product.jpg" alt="Baldur's Gate 3"></div>
             <h4>BALDUR'S GATE 3</h4>
             <p class="muted">RPG · Fantasía</p>
             <div class="card-bottom">
@@ -66,7 +69,7 @@
           </article>
 
           <article class="store-card" data-id="hogwarts" data-title="HOGWARTS LEGACY" data-price="49.99" data-image="images/hogwarts-legacy.jpg">
-            <div class="card-art">IMG</div>
+            <div class="card-art"><img src="images/hogwarts-legacy.jpg" alt="Hogwarts Legacy"></div>
             <h4>HOGWARTS LEGACY</h4>
             <p class="muted">RPG · Fantasía</p>
             <div class="card-bottom">
@@ -74,12 +77,12 @@
               <a class="btn small" href="index.html">Ver</a>
             </div>
             <div style="margin-top:8px">
-              <button class="btn small add-to-cart" data-id="hogwarts" data-title="HOGWARTS LEGACY" data-price="49.99" data-image="images/hogwarts-legacy.jpeg">Agregar al carrito</button>
+              <button class="btn small add-to-cart" data-id="hogwarts" data-title="HOGWARTS LEGACY" data-price="49.99" data-image="images/hogwarts-legacy.jpg">Agregar al carrito</button>
             </div>
           </article>
 
           <article class="store-card" data-id="dragon" data-title="DRAGON'S DOGMA 2" data-price="49.99" data-image="images/dragons-dogma-2.jpg">
-            <div class="card-art">IMG</div>
+            <div class="card-art"><img src="images/dragons-dogma-2.jpg" alt="Dragon's Dogma 2"></div>
             <h4>DRAGON'S DOGMA 2</h4>
             <p class="muted">Acción · RPG</p>
             <div class="card-bottom">
@@ -116,7 +119,35 @@
     <button id="cart-clear" class="btn small">Vaciar carrito</button>
     <button id="cart-checkout" class="btn big btn-checkout">Pagar</button>
   </aside>
-
   <script src="cart.js"></script>
+  <script>
+    // Menu toggle for header
+    (function(){
+      const menuBtn = document.getElementById('menu-btn');
+      const menu = document.getElementById('menu-list');
+
+      function closeMenu(){
+        menu.hidden = true;
+        menuBtn.setAttribute('aria-expanded','false');
+      }
+
+      menuBtn.addEventListener('click', function(e){
+        const isOpen = !menu.hidden;
+        menu.hidden = isOpen;
+        menuBtn.setAttribute('aria-expanded', String(!isOpen));
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function(e){
+        if (!menu.hidden) {
+          const within = e.composedPath ? e.composedPath() : (e.path || []);
+          if (!within.includes(menu) && !within.includes(menuBtn)) closeMenu();
+        }
+      });
+
+      // Close on escape
+      document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeMenu(); });
+    })();
+  </script>
 </body>
 </html>

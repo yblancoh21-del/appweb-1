@@ -86,8 +86,23 @@ body{
 @media (max-width:520px){
   .cart-panel{width:92%}
 }
+.nav{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+.header-actions{display:flex;align-items:center;gap:12px;position:relative}
+.menu-btn{background:transparent;border:1px solid var(--glass-border);padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
+.menu-list{position:absolute;right:64px;top:60px;background:var(--panel);border:1px solid var(--glass-border);padding:10px;border-radius:8px;display:flex;flex-direction:column;gap:8px;min-width:170px;box-shadow:0 10px 30px rgba(0,0,0,0.6);z-index:120}
+.menu-list[hidden]{display:none}
+.menu-list a{color:var(--muted);text-decoration:none;padding:8px;border-radius:6px}
+.menu-list a.active{color:var(--accent)}
+
 .nav a{
-  margin-left:14px;
+  margin:0;
   color:var(--muted);
   text-decoration:none;
   font-size:14px;
@@ -214,6 +229,13 @@ body{
   .hero-right{width:100%}
   .grid-store{grid-template-columns:1fr}
   .container{margin:20px}
+  .nav{
+    position:static;
+    transform:none;
+    margin-left:auto;
+    gap:10px;
+  }
+  .menu-list{right:16px;top:62px;min-width:calc(100% - 32px)}
 }
 
 /* ======================
