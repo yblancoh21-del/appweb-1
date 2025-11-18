@@ -20,10 +20,6 @@
         <a href="index.html">Inicio</a>
         <a href="registro_gamer.html" class="btn small">Registrarse</a>
       </nav>
-      <button id="cart-btn" class="cart-btn" aria-label="Ver carrito">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6h15l-1.5 9h-12L6 6z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1" fill="currentColor"/><circle cx="18" cy="20" r="1" fill="currentColor"/></svg>
-        <span id="cart-count" class="cart-count">0</span>
-      </button>
     </div>
   </header>
 
@@ -34,6 +30,10 @@
       <input type="text" id="login-username" placeholder="tu_usuario" required>
       <label>Contraseña</label>
       <input type="password" id="login-password" placeholder="********" required>
+      <div style="margin:10px 0;display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="login-admin-toggle">
+        <label for="login-admin-toggle" style="margin:0;cursor:pointer">Soy admin</label>
+      </div>
       <button class="btn big" type="submit">Entrar</button>
     </form>
     <div class="auth-links">
@@ -41,19 +41,7 @@
       <a href="index.html" class="muted">Volver al inicio</a>
     </div>
   </main>
-  <!-- Cart panel -->
-  <aside id="cart-panel" class="cart-panel" aria-hidden="true">
-    <div class="cart-head">
-      <h3>Tu carrito</h3>
-      <button id="cart-close" class="btn small">Cerrar</button>
-    </div>
-    <div class="cart-items" id="cart-items"></div>
-    <div class="cart-total"><div>Total</div><div id="cart-total">$0.00</div></div>
-    <button id="cart-clear" class="btn small">Vaciar carrito</button>
-    <button id="cart-checkout" class="btn big btn-checkout">Pagar</button>
-  </aside>
-
-  <script src="cart.js"></script>
+  <!-- cart removed from login page -->
   <script src="api.js"></script>
   <script>
     (function(){
@@ -69,7 +57,11 @@
       event.preventDefault();
       const username = document.getElementById('login-username').value;
       const password = document.getElementById('login-password').value;
-      loginUser(username, password);
+      const wantAdmin = document.getElementById('login-admin-toggle').checked;
+
+      // Call loginUser and let api.js handle redirect based on user role
+      // but if user checked 'Soy admin' we prioritize redirect to admin after successful login
+      loginUser(username, password, wantAdmin);
     }
   </script>
 </body>

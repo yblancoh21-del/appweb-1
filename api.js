@@ -74,7 +74,7 @@ async function registerUser(username, email, password) {
 }
 
 // Login user
-async function loginUser(username, password) {
+async function loginUser(username, password, wantAdmin=false) {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
@@ -89,9 +89,22 @@ async function loginUser(username, password) {
       return false;
     }
     
+    // Save user session
     saveUserSession({ ...data.user, id: data.user_id });
     showToast('¡Bienvenido ' + data.user.username + '!', 'success');
-    setTimeout(() => location.href = 'dashboard.html', 1500);
+
+    // If caller requested admin access but user isn't admin, show error
+    if (wantAdmin && !data.user.is_admin) {
+      showToast('No tienes permisos de administrador', 'error');
+      return false;
+    }
+
+    // Redirect admins to admin panel, others to dashboard
+    if (data.user.is_admin) {
+      setTimeout(() => location.href = 'admin.html', 1200);
+    } else {
+      setTimeout(() => location.href = 'dashboard.html', 1200);
+    }
     return true;
   } catch (error) {
     console.error('Login error:', error);
