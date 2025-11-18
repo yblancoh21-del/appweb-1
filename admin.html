@@ -91,6 +91,7 @@
     <div class="admin-section">
       <h2>Agregar Nuevo Producto</h2>
       <form id="add-product-form" onsubmit="handleAddProduct(event)">
+        <input type="hidden" id="editing-product-id" value="">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
           <input type="text" id="product-id" placeholder="ID del producto" required>
           <input type="text" id="product-title" placeholder="Título" required>
@@ -138,6 +139,7 @@
             <th>Título</th>
             <th>Precio</th>
             <th>Categoría</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="products-body">
@@ -251,7 +253,7 @@
         
         const tbody = document.getElementById('products-body');
         if (products.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4">No hay productos</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5">No hay productos</td></tr>';
           return;
         }
 
@@ -260,12 +262,17 @@
             <td>${p.id}</td>
             <td>${p.title}</td>
             <td>$${p.price.toFixed(2)}</td>
-            <td>${p.category}</td>
+            <td>${p.category || ''}</td>
+            <td style="display:flex;gap:8px">
+              <button class="btn small" onclick="startEdit('${p.product_id}')">Editar</button>
+              <button class="btn small" onclick="deleteProduct('${p.product_id}')" style="background:#ff6b6b;color:#061017">Eliminar</button>
+              <button class="btn small" onclick="toggleProduct('${p.product_id}')">${p.visible ? 'Ocultar' : 'Mostrar'}</button>
+            </td>
           </tr>
         `).join('');
       } catch (error) {
         console.error('Error loading products:', error);
-        document.getElementById('products-body').innerHTML = '<tr><td colspan="4">Error cargando productos</td></tr>';
+        document.getElementById('products-body').innerHTML = '<tr><td colspan="5">Error cargando productos</td></tr>';
       }
     }
 
@@ -346,7 +353,8 @@
     // Handle add product form
     async function handleAddProduct(event) {
       event.preventDefault();
-      
+      const editingId = document.getElementById('editing-product-id').value;
+
       const productData = {
         product_id: document.getElementById('product-id').value,
         title: document.getElementById('product-title').value,
@@ -355,35 +363,99 @@
         image_url: document.getElementById('product-image').value || '',
         description: document.getElementById('product-description').value || ''
       };
-      
+
       try {
-        const response = await fetch(`${API_BASE_URL}/products/add`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(productData)
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-          showToast('Error: ' + data.error, 'error');
-          return;
+        const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+        const headers = { 'Content-Type': 'application/json' };
+        if (currentUser && currentUser.id) headers['X-User-Id'] = currentUser.id;
+
+        let response, data;
+        if (editingId) {
+          response = await fetch(`${API_BASE_URL}/products/${encodeURIComponent(editingId)}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(productData)
+          });
+          data = await response.json();
+          if (!response.ok) { showToast('Error: ' + data.error, 'error'); return; }
+          showToast('Producto actualizado', 'success');
+        } else {
+          response = await fetch(`${API_BASE_URL}/products/add`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(productData)
+          });
+          data = await response.json();
+          if (!response.ok) { showToast('Error: ' + data.error, 'error'); return; }
+          showToast('Producto agregado correctamente', 'success');
         }
-        
-        showToast('Producto agregado correctamente', 'success');
+
         document.getElementById('add-product-form').reset();
+        document.getElementById('editing-product-id').value = '';
+        try { document.querySelector('#add-product-form button[type=submit]').textContent = 'Agregar Producto'; } catch(e){}
+
         loadProducts();
         loadStats();
-        // Notify other windows/tabs (dashboard) that a product was added
+
         try {
-          localStorage.setItem('product_added', JSON.stringify({ product_id: productData.product_id, ts: Date.now() }));
-        } catch (e) {
-          console.warn('Could not write product_added to localStorage', e);
-        }
+          localStorage.setItem('product_added', JSON.stringify({ product_id: productData.product_id || editingId, ts: Date.now() }));
+        } catch (e) { console.warn('Could not write product_added to localStorage', e); }
       } catch (error) {
-        console.error('Error adding product:', error);
-        showToast('Error al agregar el producto', 'error');
+        console.error('Error adding/updating product:', error);
+        showToast('Error al agregar/actualizar el producto', 'error');
       }
+    }
+
+    // Start editing: populate form with product values
+    async function startEdit(product_id) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/products/${encodeURIComponent(product_id)}`);
+        const data = await response.json();
+        if (!response.ok) { showToast('Error cargando producto', 'error'); return; }
+
+        document.getElementById('editing-product-id').value = data.product_id;
+        document.getElementById('product-id').value = data.product_id;
+        document.getElementById('product-title').value = data.title;
+        document.getElementById('product-price').value = data.price;
+        document.getElementById('product-category').value = data.category || '';
+        document.getElementById('product-image').value = data.image_url || '';
+        document.getElementById('product-description').value = data.description || '';
+        try { document.querySelector('#add-product-form button[type=submit]').textContent = 'Guardar cambios'; } catch(e){}
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        console.error('startEdit error', err);
+        showToast('Error al preparar edición', 'error');
+      }
+    }
+
+    async function deleteProduct(product_id) {
+      if (!confirm('Eliminar producto? Esta acción no se puede deshacer.')) return;
+      try {
+        const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+        const headers = {};
+        if (currentUser && currentUser.id) headers['X-User-Id'] = currentUser.id;
+        const response = await fetch(`${API_BASE_URL}/products/${encodeURIComponent(product_id)}`, { method: 'DELETE', headers });
+        const data = await response.json();
+        if (!response.ok) { showToast('Error: ' + data.error, 'error'); return; }
+        showToast('Producto eliminado', 'success');
+        loadProducts();
+        loadStats();
+        try { localStorage.setItem('product_added', JSON.stringify({ product_id, ts: Date.now() })); } catch(e){}
+      } catch (err) { console.error(err); showToast('Error eliminando producto', 'error'); }
+    }
+
+    async function toggleProduct(product_id) {
+      try {
+        const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+        const headers = {};
+        if (currentUser && currentUser.id) headers['X-User-Id'] = currentUser.id;
+        const response = await fetch(`${API_BASE_URL}/products/${encodeURIComponent(product_id)}/toggle`, { method: 'PUT', headers });
+        const data = await response.json();
+        if (!response.ok) { showToast('Error: ' + data.error, 'error'); return; }
+        showToast(data.visible ? 'Producto visible' : 'Producto oculto', 'info');
+        loadProducts();
+        try { localStorage.setItem('product_added', JSON.stringify({ product_id, ts: Date.now() })); } catch(e){}
+      } catch (err) { console.error(err); showToast('Error actualizando visibilidad', 'error'); }
     }
   </script>
 </body>

@@ -37,6 +37,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     cart = db.relationship('CartItem', backref='user', lazy=True, cascade='all, delete-orphan')
     orders = db.relationship('Order', backref='user', lazy=True)
@@ -46,6 +47,7 @@ class User(db.Model):
             'id': self.id,
             'username': self.username,
             'email': self.email,
+            'is_admin': bool(self.is_admin),
             'created_at': self.created_at.isoformat()
         }
 
@@ -56,6 +58,7 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text)
     image_url = db.Column(db.String(255))
+    visible = db.Column(db.Boolean, default=True)
     category = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     cart_items = db.relationship('CartItem', backref='product', lazy=True)
@@ -68,6 +71,7 @@ class Product(db.Model):
             'price': self.price,
             'description': self.description,
             'image_url': self.image_url,
+            'visible': bool(self.visible),
             'category': self.category
         }
 
@@ -148,7 +152,8 @@ def login():
 
 @app.route('/api/products', methods=['GET'])
 def get_products():
-    products = Product.query.all()
+    # Only return visible products for public listing
+    products = Product.query.filter_by(visible=True).all()
     return jsonify({'products': [p.to_dict() for p in products]}), 200
 
 @app.route('/api/products/<product_id>', methods=['GET'])
@@ -157,6 +162,82 @@ def get_product(product_id):
     if not product:
         return jsonify({'error': 'Product not found'}), 404
     return jsonify(product.to_dict()), 200
+
+
+def _get_user_from_header():
+    # Expect header 'X-User-Id' with numeric user id for admin checks
+    uid = None
+    try:
+        uid = request.headers.get('X-User-Id')
+        if uid:
+            return User.query.get(int(uid))
+    except Exception:
+        return None
+    return None
+
+
+def _require_admin():
+    user = _get_user_from_header()
+    if not user or not getattr(user, 'is_admin', False):
+        return None, (jsonify({'error': 'Admin privileges required'}), 403)
+    return user, None
+
+
+@app.route('/api/products/<product_id>', methods=['PUT'])
+def edit_product(product_id):
+    admin_user, err = _require_admin()
+    if err:
+        return err
+
+    product = Product.query.filter_by(product_id=product_id).first()
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+
+    data = request.get_json() or {}
+    product.title = data.get('title', product.title)
+    if data.get('price') is not None:
+        try:
+            product.price = float(data.get('price'))
+        except Exception:
+            pass
+    product.description = data.get('description', product.description)
+    product.image_url = data.get('image_url', product.image_url)
+    product.category = data.get('category', product.category)
+    if 'visible' in data:
+        product.visible = bool(data.get('visible'))
+
+    db.session.commit()
+    return jsonify({'message': 'Product updated', 'product': product.to_dict()}), 200
+
+
+@app.route('/api/products/<product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    admin_user, err = _require_admin()
+    if err:
+        return err
+
+    product = Product.query.filter_by(product_id=product_id).first()
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+
+    db.session.delete(product)
+    db.session.commit()
+    return jsonify({'message': 'Product deleted'}), 200
+
+
+@app.route('/api/products/<product_id>/toggle', methods=['PUT'])
+def toggle_product_visibility(product_id):
+    admin_user, err = _require_admin()
+    if err:
+        return err
+
+    product = Product.query.filter_by(product_id=product_id).first()
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+
+    product.visible = not bool(product.visible)
+    db.session.commit()
+    return jsonify({'message': 'Visibility toggled', 'visible': bool(product.visible)}), 200
 
 @app.route('/api/products/add', methods=['POST'])
 def add_product():

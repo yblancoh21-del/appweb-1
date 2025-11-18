@@ -21,7 +21,7 @@
         <a href="dashboard.html">Tienda</a>
         <a href="login_gamer.html">Iniciar sesión</a>
         <a href="registro_gamer.html" class="btn small">Registrarse</a>
-        <a href="admin.html" class="btn small" style="background:rgba(255,123,61,0.2);border:1px solid var(--accent-2);">Admin</a>
+        <a id="admin-link" href="admin.html" class="btn small" style="background:rgba(255,123,61,0.2);border:1px solid var(--accent-2);">Admin</a>
       </nav>
       <button id="cart-btn" class="cart-btn" aria-label="Ver carrito">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6h15l-1.5 9h-12L6 6z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1" fill="currentColor"/><circle cx="18" cy="20" r="1" fill="currentColor"/></svg>
@@ -139,6 +139,20 @@
   </aside>
 
   <script src="cart.js"></script>
+  <script>
+    // Hide admin link for non-admin users
+    (function(){
+      try {
+        const adminLink = document.getElementById('admin-link');
+        if (!adminLink) return;
+        const userRaw = localStorage.getItem('user');
+        const user = userRaw ? JSON.parse(userRaw) : null;
+        if (!user || !user.is_admin) {
+          adminLink.style.display = 'none';
+        }
+      } catch(e) { console.warn(e); }
+    })();
+  </script>
   <script>
     // Ordena la galería según el atributo data-order
     (function(){
