@@ -90,6 +90,21 @@
       renderDashboardProducts();
     });
 
+    // Listen for product additions from other tabs (admin)
+    window.addEventListener('storage', function(e){
+      if (!e) return;
+      if (e.key === 'product_added'){
+        try {
+          // Optionally parse payload if needed
+          const payload = JSON.parse(e.newValue || '{}');
+          console.log('Product added event received', payload);
+        } catch (err) {
+          // ignore parse errors
+        }
+        renderDashboardProducts();
+      }
+    });
+
     // Menu toggle for header
     (function(){
       const menuBtn = document.getElementById('menu-btn');

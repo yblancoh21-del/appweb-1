@@ -374,6 +374,12 @@
         document.getElementById('add-product-form').reset();
         loadProducts();
         loadStats();
+        // Notify other windows/tabs (dashboard) that a product was added
+        try {
+          localStorage.setItem('product_added', JSON.stringify({ product_id: productData.product_id, ts: Date.now() }));
+        } catch (e) {
+          console.warn('Could not write product_added to localStorage', e);
+        }
       } catch (error) {
         console.error('Error adding product:', error);
         showToast('Error al agregar el producto', 'error');
