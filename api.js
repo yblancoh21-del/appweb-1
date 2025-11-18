@@ -47,12 +47,12 @@ function logout() {
 }
 
 // Register user
-async function registerUser(username, email, password) {
+async function registerUser(username, email, password, isAdmin = false) {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify({ username, email, password, is_admin: isAdmin })
     });
     
     const data = await response.json();
@@ -64,7 +64,9 @@ async function registerUser(username, email, password) {
     
     saveUserSession(data.user);
     showToast('¡Cuenta creada correctamente!', 'success');
-    setTimeout(() => location.href = 'dashboard.html', 1500);
+    // Redirect to admin if registered as admin, else to dashboard
+    const redirectUrl = isAdmin ? 'admin.html' : 'dashboard.html';
+    setTimeout(() => location.href = redirectUrl, 1500);
     return true;
   } catch (error) {
     console.error('Register error:', error);

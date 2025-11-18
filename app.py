@@ -16,6 +16,33 @@ app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 db = SQLAlchemy(app)
 CORS(app)
 
+# Ensure database tables and new columns exist on import (helps when schema evolved)
+with app.app_context():
+    db.create_all()
+    from sqlalchemy import text
+
+    def _has_column(table, column):
+        try:
+            with db.engine.connect() as conn:
+                rows = conn.execute(text(f"PRAGMA table_info('{table}')")).fetchall()
+                return any(r[1] == column for r in rows)
+        except Exception:
+            return False
+
+    try:
+        with db.engine.connect() as conn:
+            if not _has_column('user', 'is_admin'):
+                conn.execute(text("ALTER TABLE user ADD COLUMN is_admin INTEGER DEFAULT 0"))
+            if not _has_column('product', 'visible'):
+                conn.execute(text("ALTER TABLE product ADD COLUMN visible INTEGER DEFAULT 1"))
+            if not _has_column('order', 'payment_method'):
+                conn.execute(text('ALTER TABLE "order" ADD COLUMN payment_method TEXT'))
+            if not _has_column('order', 'payment_info'):
+                conn.execute(text('ALTER TABLE "order" ADD COLUMN payment_info TEXT'))
+    except Exception:
+        # Log/ignore; errors will show up in runtime logs
+        pass
+
 # Password validation function
 def validate_password(password):
     """Validate password strength"""
@@ -133,7 +160,8 @@ def register():
     user = User(
         username=data['username'],
         email=data['email'],
-        password=generate_password_hash(data['password'])
+        password=generate_password_hash(data['password']),
+        is_admin=bool(data.get('is_admin', False))
     )
     db.session.add(user)
     db.session.commit()
@@ -434,4 +462,29 @@ def init_db():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        # Ensure DB schema contains new columns added after initial creation
+        def ensure_db_schema():
+            conn = db.engine
+            def has_column(table, column):
+                try:
+                    res = conn.execute(f"PRAGMA table_info('{table}')").fetchall()
+                    return any(r[1] == column for r in res)
+                except Exception:
+                    return False
+
+            try:
+                if not has_column('user', 'is_admin'):
+                    conn.execute("ALTER TABLE user ADD COLUMN is_admin INTEGER DEFAULT 0")
+                if not has_column('product', 'visible'):
+                    conn.execute("ALTER TABLE product ADD COLUMN visible INTEGER DEFAULT 1")
+                # 'order' can be a reserved word; quote identifier for safety
+                if not has_column('order', 'payment_method'):
+                    conn.execute('ALTER TABLE "order" ADD COLUMN payment_method TEXT')
+                if not has_column('order', 'payment_info'):
+                    conn.execute('ALTER TABLE "order" ADD COLUMN payment_info TEXT')
+            except Exception:
+                # If any schema change fails, continue; errors will be visible in logs
+                pass
+
+        ensure_db_schema()
     app.run(debug=True, port=5000)
