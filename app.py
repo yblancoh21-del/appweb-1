@@ -125,7 +125,6 @@ def login():
     
     return jsonify({'message': 'Login successful', 'user': user.to_dict(), 'user_id': user.id}), 200
 
-# Products endpoints
 @app.route('/api/products', methods=['GET'])
 def get_products():
     products = Product.query.all()
@@ -137,6 +136,29 @@ def get_product(product_id):
     if not product:
         return jsonify({'error': 'Product not found'}), 404
     return jsonify(product.to_dict()), 200
+
+@app.route('/api/products/add', methods=['POST'])
+def add_product():
+    data = request.get_json()
+    
+    if not data.get('product_id') or not data.get('title') or not data.get('price'):
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    if Product.query.filter_by(product_id=data['product_id']).first():
+        return jsonify({'error': 'Product ID already exists'}), 409
+    
+    product = Product(
+        product_id=data['product_id'],
+        title=data['title'],
+        price=float(data['price']),
+        description=data.get('description', ''),
+        image_url=data.get('image_url', ''),
+        category=data.get('category', 'General')
+    )
+    db.session.add(product)
+    db.session.commit()
+    
+    return jsonify({'message': 'Product added successfully', 'product': product.to_dict()}), 201
 
 # Cart endpoints
 @app.route('/api/cart/<int:user_id>', methods=['GET'])
