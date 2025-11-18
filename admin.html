@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin - Gamer's Hub</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .admin-container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    .admin-section {
+      background: var(--panel);
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      margin-bottom: 20px;
+    }
+    .admin-section h2 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table th, table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    table th {
+      background: rgba(0, 208, 255, 0.1);
+      font-weight: 700;
+    }
+    table tr:hover {
+      background: rgba(0, 208, 255, 0.05);
+    }
+    .stat-box {
+      display: inline-block;
+      background: rgba(0, 208, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-right: 15px;
+      margin-bottom: 10px;
+      border: 1px solid var(--accent);
+    }
+    .stat-box .number {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .stat-box .label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .btn-refresh {
+      background: var(--accent-2);
+      color: #061017;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-refresh:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">
+      <a href="index.html" class="logo-link">
+        <img src="images/logo.png" alt="Gamer's Hub" class="site-logo">
+        <span class="brand-text">ADMIN</span>
+      </a>
+    </div>
+    <div class="header-actions">
+      <button onclick="location.href='index.html'" class="btn small">Volver</button>
+    </div>
+  </header>
+
+  <main class="admin-container">
+    <h1>Panel de Administración</h1>
+
+    <!-- Stats -->
+    <div class="admin-section">
+      <h2>Estadísticas</h2>
+      <button class="btn-refresh" onclick="loadStats()">🔄 Actualizar</button>
+      <div id="stats-container"></div>
+    </div>
+
+    <!-- Users -->
+    <div class="admin-section">
+      <h2>Usuarios Registrados</h2>
+      <table id="users-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Fecha Registro</th>
+          </tr>
+        </thead>
+        <tbody id="users-body">
+          <tr><td colspan="4">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Products -->
+    <div class="admin-section">
+      <h2>Productos</h2>
+      <table id="products-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Precio</th>
+            <th>Categoría</th>
+          </tr>
+        </thead>
+        <tbody id="products-body">
+          <tr><td colspan="4">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Cart Items -->
+    <div class="admin-section">
+      <h2>Items en Carrito</h2>
+      <table id="cart-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody id="cart-body">
+          <tr><td colspan="5">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Orders -->
+    <div class="admin-section">
+      <h2>Órdenes</h2>
+      <table id="orders-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody id="orders-body">
+          <tr><td colspan="5">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    async function loadStats() {
+      try {
+        const users = await fetch(`${API_BASE_URL}/admin/users`).then(r => r.json());
+        const products = await fetch(`${API_BASE_URL}/admin/products`).then(r => r.json());
+        const carts = await fetch(`${API_BASE_URL}/admin/carts`).then(r => r.json());
+        const orders = await fetch(`${API_BASE_URL}/admin/orders`).then(r => r.json());
+
+        const statsHtml = `
+          <div class="stat-box">
+            <div class="number">${users.length}</div>
+            <div class="label">Usuarios</div>
+          </div>
+          <div class="stat-box">
+            <div class="number">${products.length}</div>
+            <div class="label">Productos</div>
+          </div>
+          <div class="stat-box">
+            <div class="number">${carts.length}</div>
+            <div class="label">Items en Carrito</div>
+          </div>
+          <div class="stat-box">
+            <div class="number">${orders.length}</div>
+            <div class="label">Órdenes</div>
+          </div>
+        `;
+        document.getElementById('stats-container').innerHTML = statsHtml;
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/users`);
+        const users = await response.json();
+        
+        const tbody = document.getElementById('users-body');
+        if (users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4">No hay usuarios</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td>${u.id}</td>
+            <td>${u.username}</td>
+            <td>${u.email}</td>
+            <td>${new Date(u.created_at).toLocaleString('es-ES')}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading users:', error);
+        document.getElementById('users-body').innerHTML = '<tr><td colspan="4">Error cargando usuarios</td></tr>';
+      }
+    }
+
+    async function loadProducts() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/products`);
+        const products = await response.json();
+        
+        const tbody = document.getElementById('products-body');
+        if (products.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4">No hay productos</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = products.map(p => `
+          <tr>
+            <td>${p.id}</td>
+            <td>${p.title}</td>
+            <td>$${p.price.toFixed(2)}</td>
+            <td>${p.category}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading products:', error);
+        document.getElementById('products-body').innerHTML = '<tr><td colspan="4">Error cargando productos</td></tr>';
+      }
+    }
+
+    async function loadCarts() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/carts`);
+        const carts = await response.json();
+        
+        const tbody = document.getElementById('cart-body');
+        if (carts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5">No hay items en carrito</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = carts.map(c => `
+          <tr>
+            <td>${c.id}</td>
+            <td>${c.user_id}</td>
+            <td>${c.product_title}</td>
+            <td>${c.quantity}</td>
+            <td>${new Date(c.added_at).toLocaleString('es-ES')}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading carts:', error);
+        document.getElementById('cart-body').innerHTML = '<tr><td colspan="5">Error cargando carrito</td></tr>';
+      }
+    }
+
+    async function loadOrders() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/orders`);
+        const orders = await response.json();
+        
+        const tbody = document.getElementById('orders-body');
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5">No hay órdenes</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td>${o.id}</td>
+            <td>${o.user_id}</td>
+            <td>$${o.total_price.toFixed(2)}</td>
+            <td>${o.status}</td>
+            <td>${new Date(o.created_at).toLocaleString('es-ES')}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        document.getElementById('orders-body').innerHTML = '<tr><td colspan="5">Error cargando órdenes</td></tr>';
+      }
+    }
+
+    // Load all on page load
+    window.addEventListener('load', function() {
+      loadStats();
+      loadUsers();
+      loadProducts();
+      loadCarts();
+      loadOrders();
+    });
+  </script>
+</body>
+</html>

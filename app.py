@@ -228,6 +228,36 @@ def checkout():
         'total': total
     }), 201
 
+# Admin endpoints
+@app.route('/api/admin/users', methods=['GET'])
+def get_all_users():
+    users = User.query.all()
+    return jsonify([u.to_dict() for u in users]), 200
+
+@app.route('/api/admin/products', methods=['GET'])
+def get_all_products():
+    products = Product.query.all()
+    return jsonify([p.to_dict() for p in products]), 200
+
+@app.route('/api/admin/carts', methods=['GET'])
+def get_all_carts():
+    cart_items = CartItem.query.all()
+    result = []
+    for item in cart_items:
+        result.append({
+            'id': item.id,
+            'user_id': item.user_id,
+            'product_title': item.product.title,
+            'quantity': item.quantity,
+            'added_at': item.added_at.isoformat()
+        })
+    return jsonify(result), 200
+
+@app.route('/api/admin/orders', methods=['GET'])
+def get_all_orders():
+    orders = Order.query.all()
+    return jsonify([o.to_dict() for o in orders]), 200
+
 # Health check
 @app.route('/api/health', methods=['GET'])
 def health():
