@@ -54,46 +54,8 @@
       </div>
 
       <div class="store-main">
-        <div class="store-row">
-          <!-- example product cards -->
-          <article class="store-card" data-id="baldurs" data-title="BALDUR'S GATE 3" data-price="59.99" data-image="images/baldurs-gate-3-product.jpg">
-            <div class="card-art"><img src="images/baldurs-gate-3-product.jpg" alt="Baldur's Gate 3"></div>
-            <h4>BALDUR'S GATE 3</h4>
-            <p class="muted">RPG · Fantasía</p>
-            <div class="card-bottom">
-              <div class="price">$59.99</div>
-              <a class="btn small" href="index.html">Ver</a>
-            </div>
-            <div style="margin-top:8px">
-              <button class="btn small add-to-cart" data-id="baldurs" data-title="BALDUR'S GATE 3" data-price="59.99" data-image="images/baldurs-gate-3-product.jpg">Agregar al carrito</button>
-            </div>
-          </article>
-
-          <article class="store-card" data-id="hogwarts" data-title="HOGWARTS LEGACY" data-price="49.99" data-image="images/hogwarts-legacy.jpg">
-            <div class="card-art"><img src="images/hogwarts-legacy.jpg" alt="Hogwarts Legacy"></div>
-            <h4>HOGWARTS LEGACY</h4>
-            <p class="muted">RPG · Fantasía</p>
-            <div class="card-bottom">
-              <div class="price">$49.99</div>
-              <a class="btn small" href="index.html">Ver</a>
-            </div>
-            <div style="margin-top:8px">
-              <button class="btn small add-to-cart" data-id="hogwarts" data-title="HOGWARTS LEGACY" data-price="49.99" data-image="images/hogwarts-legacy.jpg">Agregar al carrito</button>
-            </div>
-          </article>
-
-          <article class="store-card" data-id="dragon" data-title="DRAGON'S DOGMA 2" data-price="49.99" data-image="images/dragons-dogma-2.jpg">
-            <div class="card-art"><img src="images/dragons-dogma-2.jpg" alt="Dragon's Dogma 2"></div>
-            <h4>DRAGON'S DOGMA 2</h4>
-            <p class="muted">Acción · RPG</p>
-            <div class="card-bottom">
-              <div class="price">$49.99</div>
-              <a class="btn small" href="index.html">Ver</a>
-            </div>
-            <div style="margin-top:8px">
-              <button class="btn small add-to-cart" data-id="dragon" data-title="DRAGON'S DOGMA 2" data-price="49.99" data-image="images/dragons-dogma-2.jpg">Agregar al carrito</button>
-            </div>
-          </article>
+        <div class="store-row" id="products-container">
+          <!-- Productos cargados dinámicamente -->
         </div>
 
         <div class="section-title">Ofertas destacadas</div>
@@ -121,7 +83,13 @@
     <button id="cart-checkout" class="btn big btn-checkout">Pagar</button>
   </aside>
   <script src="cart.js"></script>
+  <script src="api.js"></script>
   <script>
+    // Cargar productos cuando la página se abre
+    document.addEventListener('DOMContentLoaded', function() {
+      renderDashboardProducts();
+    });
+
     // Menu toggle for header
     (function(){
       const menuBtn = document.getElementById('menu-btn');

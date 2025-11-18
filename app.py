@@ -149,7 +149,7 @@ def login():
 @app.route('/api/products', methods=['GET'])
 def get_products():
     products = Product.query.all()
-    return jsonify([p.to_dict() for p in products]), 200
+    return jsonify({'products': [p.to_dict() for p in products]}), 200
 
 @app.route('/api/products/<product_id>', methods=['GET'])
 def get_product(product_id):

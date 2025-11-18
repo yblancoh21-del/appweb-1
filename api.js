@@ -185,3 +185,70 @@ function initializeCart() {
     window.cart = JSON.parse(savedCart);
   }
 }
+
+// Get all products from database
+async function getProducts() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products`);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error('Error fetching products:', data.error);
+      return [];
+    }
+    
+    return data.products || [];
+  } catch (error) {
+    console.error('Error getting products:', error);
+    return [];
+  }
+}
+
+// Render products in dashboard
+async function renderDashboardProducts() {
+  const storeRow = document.querySelector('.store-row');
+  if (!storeRow) return;
+  
+  const products = await getProducts();
+  
+  if (products.length === 0) {
+    storeRow.innerHTML = '<p class="muted">No hay productos disponibles</p>';
+    return;
+  }
+  
+  storeRow.innerHTML = products.map(product => `
+    <article class="store-card" data-id="${product.product_id}" data-title="${product.title}" data-price="${product.price}" data-image="${product.image_url}">
+      <div class="card-art">
+        <img src="${product.image_url}" alt="${product.title}" onerror="this.src='images/placeholder.jpg'">
+      </div>
+      <h4>${product.title}</h4>
+      <p class="muted">${product.category || 'Juego'}</p>
+      <div class="card-bottom">
+        <div class="price">$${product.price.toFixed(2)}</div>
+        <a class="btn small" href="index.html">Ver</a>
+      </div>
+      <div style="margin-top:8px">
+        <button class="btn small add-to-cart" data-id="${product.product_id}" data-title="${product.title}" data-price="${product.price}" data-image="${product.image_url}">Agregar al carrito</button>
+      </div>
+    </article>
+  `).join('');
+  
+  // Re-attach event listeners for add to cart buttons
+  attachAddToCartListeners();
+}
+
+// Attach event listeners to add to cart buttons
+function attachAddToCartListeners() {
+  document.querySelectorAll('.add-to-cart').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const item = {
+        id: this.dataset.id,
+        title: this.dataset.title,
+        price: parseFloat(this.dataset.price),
+        image: this.dataset.image
+      };
+      addItem(item);
+    });
+  });
+}
