@@ -267,3 +267,183 @@ body{
 
 /* Small helper: center art placeholders if missing images */
 .cover-placeholder img, .thumb img, .art img{display:block}
+
+/* ============================================
+   Enhanced Cart & Payment Modal Styles
+   ============================================ */
+
+/* Cart Panel Improvements */
+.cart-panel .cart-items {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.cart-panel .cart-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cart-panel .cart-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cart-panel .cart-items::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+
+.cart-panel .cart-items::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.cart-item {
+  transition: all 0.2s ease;
+}
+
+.cart-item:hover {
+  border-color: rgba(74,222,128,0.3);
+  background: rgba(74,222,128,0.05);
+}
+
+.cart-item .ci-title {
+  color: #e6eef2;
+  font-size: 0.95em;
+}
+
+.cart-item .ci-meta {
+  color: #aaa;
+  font-size: 0.85em;
+}
+
+/* Cart Total Box */
+#cart-total {
+  background: rgba(74,222,128,0.05);
+  border: 1px solid rgba(74,222,128,0.2);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.95em;
+}
+
+.cart-panel .btn-checkout {
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  width: 100%;
+  text-align: center;
+  border: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.cart-panel .btn-checkout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(74,222,128,0.3);
+}
+
+/* Payment Modal Base Styles */
+.payment-overlay {
+  animation: fadeIn 0.3s ease;
+}
+
+.payment-modal {
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Payment Modal Form Styling */
+.payment-modal input,
+.payment-modal select {
+  transition: all 0.2s ease;
+}
+
+.payment-modal input:focus,
+.payment-modal select:focus {
+  outline: none;
+  border-color: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74,222,128,0.1);
+  background: rgba(0,0,0,0.3);
+}
+
+.payment-modal input::placeholder {
+  color: rgba(230,238,242,0.4);
+}
+
+/* Radio button styling for payment methods */
+.payment-modal input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #555;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.payment-modal input[type="radio"]:hover {
+  border-color: #4ade80;
+}
+
+.payment-modal input[type="radio"]:checked {
+  border-color: #4ade80;
+  background: #4ade80;
+  box-shadow: 0 0 0 4px rgba(74,222,128,0.2);
+}
+
+/* Button styling in payment modal */
+.payment-modal .btn {
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95em;
+}
+
+.payment-modal #pm-cancel {
+  transition: all 0.2s ease;
+}
+
+.payment-modal #pm-cancel:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.payment-modal #pm-pay {
+  transition: all 0.2s ease;
+}
+
+.payment-modal #pm-pay:hover {
+  background: #22c55e;
+  box-shadow: 0 8px 20px rgba(74,222,128,0.4);
+  transform: translateY(-2px);
+}
+
+.payment-modal #pm-pay:active {
+  transform: translateY(0);
+}
+
+/* Responsive payment modal */
+@media (max-width:600px) {
+  .payment-modal {
+    max-width: 95vw !important;
+    width: 100% !important;
+    max-height: 95vh;
+  }
+  
+  .payment-modal > div:last-child {
+    overflow-y: auto;
+    max-height: 70vh;
+  }
+}
