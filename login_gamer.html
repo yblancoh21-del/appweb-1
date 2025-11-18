@@ -29,11 +29,11 @@
 
   <main class="auth-card">
     <h2>Inicia sesión</h2>
-    <form onsubmit="event.preventDefault(); location.href='dashboard.html'">
+    <form id="login-form" onsubmit="handleLogin(event)">
       <label>Usuario</label>
-      <input type="text" placeholder="tu_usuario" required>
+      <input type="text" id="login-username" placeholder="tu_usuario" required>
       <label>Contraseña</label>
-      <input type="password" placeholder="********" required>
+      <input type="password" id="login-password" placeholder="********" required>
       <button class="btn big" type="submit">Entrar</button>
     </form>
     <div class="auth-links">
@@ -54,6 +54,7 @@
   </aside>
 
   <script src="cart.js"></script>
+  <script src="api.js"></script>
   <script>
     (function(){
       const menuBtn = document.getElementById('menu-btn');
@@ -63,6 +64,13 @@
       document.addEventListener('click', function(e){ if (!menu.hidden) { const within = e.composedPath ? e.composedPath() : (e.path || []); if (!within.includes(menu) && !within.includes(menuBtn)) closeMenu(); } });
       document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeMenu(); });
     })();
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+      loginUser(username, password);
+    }
   </script>
 </body>
 </html>
