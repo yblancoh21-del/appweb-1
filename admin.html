@@ -87,6 +87,22 @@
   <main class="admin-container">
     <h1>Panel de Administración</h1>
 
+    <!-- Add Product Form -->
+    <div class="admin-section">
+      <h2>Agregar Nuevo Producto</h2>
+      <form id="add-product-form" onsubmit="handleAddProduct(event)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <input type="text" id="product-id" placeholder="ID del producto" required>
+          <input type="text" id="product-title" placeholder="Título" required>
+          <input type="number" id="product-price" placeholder="Precio" step="0.01" required>
+          <input type="text" id="product-category" placeholder="Categoría">
+          <input type="text" id="product-image" placeholder="URL de imagen">
+          <textarea id="product-description" placeholder="Descripción" style="grid-column:1/-1;padding:8px;border:1px solid var(--glass-border);background:transparent;color:var(--muted);border-radius:6px;resize:vertical;min-height:60px"></textarea>
+        </div>
+        <button type="submit" class="btn-refresh" style="background:var(--accent);color:#001819">Agregar Producto</button>
+      </form>
+    </div>
+
     <!-- Stats -->
     <div class="admin-section">
       <h2>Estadísticas</h2>
@@ -313,6 +329,56 @@
       loadCarts();
       loadOrders();
     });
+
+    // Toast notification helper
+    function showToast(message, type='info'){
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Handle add product form
+    async function handleAddProduct(event) {
+      event.preventDefault();
+      
+      const productData = {
+        product_id: document.getElementById('product-id').value,
+        title: document.getElementById('product-title').value,
+        price: parseFloat(document.getElementById('product-price').value),
+        category: document.getElementById('product-category').value || 'General',
+        image_url: document.getElementById('product-image').value || '',
+        description: document.getElementById('product-description').value || ''
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/products/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(productData)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          showToast('Error: ' + data.error, 'error');
+          return;
+        }
+        
+        showToast('Producto agregado correctamente', 'success');
+        document.getElementById('add-product-form').reset();
+        loadProducts();
+        loadStats();
+      } catch (error) {
+        console.error('Error adding product:', error);
+        showToast('Error al agregar el producto', 'error');
+      }
+    }
   </script>
 </body>
 </html>
