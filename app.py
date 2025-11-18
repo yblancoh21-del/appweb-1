@@ -94,6 +94,8 @@ class Order(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='pending')
+    payment_method = db.Column(db.String(50), nullable=True)
+    payment_info = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -102,6 +104,8 @@ class Order(db.Model):
             'user_id': self.user_id,
             'total_price': self.total_price,
             'status': self.status,
+            'payment_method': self.payment_method,
+            'payment_info': self.payment_info,
             'created_at': self.created_at.isoformat()
         }
 
@@ -336,9 +340,17 @@ def checkout():
     
     # Calculate total
     total = sum(item.product.price * item.quantity for item in cart_items)
-    
+    # Payment handling: require payment_method unless cash
+    payment_method = (data.get('payment_method') or '').strip().lower()
+    payment_info = data.get('payment_info') or ''
+    if not payment_method:
+        return jsonify({'error': 'payment_method is required (or use "cash" for cash payments)'}), 400
+    # If not cash, require minimal payment_info (e.g., masked card last4)
+    if payment_method != 'cash' and not payment_info:
+        return jsonify({'error': 'Payment details required for non-cash payments'}), 400
+
     # Create order
-    order = Order(user_id=data['user_id'], total_price=total, status='completed')
+    order = Order(user_id=data['user_id'], total_price=total, status='completed', payment_method=payment_method, payment_info=payment_info)
     db.session.add(order)
     
     # Clear cart

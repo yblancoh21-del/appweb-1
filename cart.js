@@ -80,14 +80,34 @@
     if(e.target.closest && e.target.closest('#cart-close')){ closePanel(); return }
     if(e.target.closest && e.target.closest('#cart-clear')){ clearCart(); return }
     if(e.target.closest && e.target.closest('#cart-checkout')){ 
-      if(cart.length){ 
-        const total = document.getElementById('cart-total').textContent;
-        showToast(`Pedido completado — Total: ${total}`, 'success'); 
-        clearCart(); 
-      } else { 
-        showToast('El carrito está vacío', 'error'); 
-      } 
-      return 
+      if(!cart.length){ showToast('El carrito está vacío', 'error'); return }
+
+      // Show payment modal and process checkout if backend available
+      (async function(){
+        try {
+          const payment = await showPaymentModal();
+          if (!payment) { showToast('Pago cancelado', 'info'); return }
+
+          // If checkoutDB exists (api.js loaded), use it
+          if (typeof checkoutDB === 'function'){
+            // mask payment_info if card
+            let payment_info = '';
+            if (payment.method !== 'cash' && payment.cardNumber) {
+              const num = payment.cardNumber.replace(/\s+/g,'');
+              payment_info = 'card_last4:' + num.slice(-4);
+            }
+            const ok = await checkoutDB(payment.method, payment_info);
+            if (ok) clearCart();
+            return;
+          }
+
+          // Fallback: client-only behavior (old flow)
+          const total = document.getElementById('cart-total').textContent;
+          showToast(`Pedido completado — Total: ${total}`, 'success');
+          clearCart();
+        } catch (err) { console.error(err); showToast('Error en el proceso de pago', 'error'); }
+      })();
+      return
     }
     const rem = e.target.closest && e.target.closest('.cart-remove');
     if(rem){ const idx = Number(rem.dataset.idx); removeItem(idx); return }
@@ -99,4 +119,44 @@
   // initialize
   cart = load();
   document.addEventListener('DOMContentLoaded', function(){ renderCount(); renderPanel(); });
+  
+  // Payment modal helper
+  function showPaymentModal(){
+    return new Promise((resolve)=>{
+      // Build modal
+      const overlay = document.createElement('div'); overlay.style = 'position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:900;';
+      const modal = document.createElement('div'); modal.style = 'background:#0f1418;color:#e6eef2;padding:18px;border-radius:10px;max-width:420px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,0.6);';
+      modal.innerHTML = `
+        <h3 style="margin-top:0">Método de pago</h3>
+        <div style="margin-bottom:8px">Seleccione método de pago (en efectivo no requiere más datos)</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="pm-select" style="flex:1;padding:8px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--muted);">
+            <option value="card">Tarjeta</option>
+            <option value="cash">Efectivo</option>
+            <option value="paypal">PayPal</option>
+          </select>
+        </div>
+        <div id="pm-card-fields" style="display:block;margin-bottom:8px">
+          <input id="pm-card-number" placeholder="Número de tarjeta (solo para demostración)" style="width:100%;padding:8px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--muted);margin-bottom:8px">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button id="pm-cancel" class="btn small" type="button">Cancelar</button>
+          <button id="pm-pay" class="btn small" type="button">Pagar</button>
+        </div>
+      `;
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+
+      const select = modal.querySelector('#pm-select');
+      const cardFields = modal.querySelector('#pm-card-fields');
+      select.addEventListener('change', function(){ if (this.value === 'cash') cardFields.style.display = 'none'; else cardFields.style.display = 'block'; });
+      modal.querySelector('#pm-cancel').addEventListener('click', function(){ overlay.remove(); resolve(null); });
+      modal.querySelector('#pm-pay').addEventListener('click', function(){
+        const method = select.value;
+        const cardNumber = modal.querySelector('#pm-card-number').value || '';
+        overlay.remove();
+        resolve({ method, cardNumber });
+      });
+    });
+  }
 })();

@@ -146,17 +146,20 @@ async function getCartDB() {
 }
 
 // Checkout
-async function checkoutDB() {
+async function checkoutDB(payment_method, payment_info) {
   if (!currentUser) {
     showToast('Debes iniciar sesión para comprar', 'error');
     return false;
   }
   
   try {
+    const body = { user_id: currentUser.id, payment_method };
+    if (payment_info) body.payment_info = payment_info;
+
     const response = await fetch(`${API_BASE_URL}/checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: currentUser.id })
+      body: JSON.stringify(body)
     });
     
     const data = await response.json();
