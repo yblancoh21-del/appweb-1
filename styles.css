@@ -258,6 +258,9 @@ body{
 .toast-warning{border-color:var(--accent-2);color:var(--accent-2)}
 .toast-info{border-color:var(--accent);color:var(--accent)}
 
+/* Password requirements */
+.password-requirements{display:block;margin-top:8px;padding:12px;background:rgba(255,123,61,0.05);border:1px solid rgba(255,123,61,0.2);border-radius:8px;color:var(--muted);font-size:13px;line-height:1.6}
+
 @media (max-width:520px){
   .gallery-item img{height:110px}
 }

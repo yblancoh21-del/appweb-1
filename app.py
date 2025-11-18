@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from datetime import datetime
+import re
 
 app = Flask(__name__)
 
@@ -14,6 +15,21 @@ app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 
 db = SQLAlchemy(app)
 CORS(app)
+
+# Password validation function
+def validate_password(password):
+    """Validate password strength"""
+    if len(password) < 8:
+        return False, 'La contraseña debe tener al menos 8 caracteres'
+    if not re.search(r'[A-Z]', password):
+        return False, 'La contraseña debe contener al menos una mayúscula'
+    if not re.search(r'[a-z]', password):
+        return False, 'La contraseña debe contener al menos una minúscula'
+    if not re.search(r'[0-9]', password):
+        return False, 'La contraseña debe contener al menos un número'
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        return False, 'La contraseña debe contener al menos un carácter especial (!@#$%^&*(),.?":{}|<>)'
+    return True, 'Valid'
 
 # Database Models
 class User(db.Model):
@@ -94,6 +110,11 @@ def register():
     
     if not data.get('username') or not data.get('email') or not data.get('password'):
         return jsonify({'error': 'Missing required fields'}), 400
+    
+    # Validate password strength
+    valid, message = validate_password(data['password'])
+    if not valid:
+        return jsonify({'error': message}), 400
     
     if User.query.filter_by(username=data['username']).first():
         return jsonify({'error': 'Username already exists'}), 409
