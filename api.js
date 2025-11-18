@@ -4,6 +4,19 @@ const API_BASE_URL = 'http://localhost:5000/api';
 // Store user session
 let currentUser = null;
 
+// Toast notification
+function showToast(message, type='info'){
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
   loadUserSession();
@@ -29,7 +42,8 @@ function logout() {
   currentUser = null;
   localStorage.removeItem('user');
   localStorage.removeItem('gh_cart');
-  location.href = 'index.html';
+  showToast('Sesión cerrada', 'info');
+  setTimeout(() => location.href = 'index.html', 1500);
 }
 
 // Register user
@@ -44,17 +58,17 @@ async function registerUser(username, email, password) {
     const data = await response.json();
     
     if (!response.ok) {
-      alert('Error: ' + data.error);
+      showToast('Error: ' + data.error, 'error');
       return false;
     }
     
     saveUserSession(data.user);
-    alert('¡Cuenta creada! Redirigiendo...');
+    showToast('¡Cuenta creada correctamente!', 'success');
     setTimeout(() => location.href = 'dashboard.html', 1500);
     return true;
   } catch (error) {
     console.error('Register error:', error);
-    alert('Error en el registro');
+    showToast('Error en el registro', 'error');
     return false;
   }
 }
@@ -71,17 +85,17 @@ async function loginUser(username, password) {
     const data = await response.json();
     
     if (!response.ok) {
-      alert('Error: ' + data.error);
+      showToast('Error: ' + data.error, 'error');
       return false;
     }
     
     saveUserSession({ ...data.user, id: data.user_id });
-    alert('¡Bienvenido!');
+    showToast('¡Bienvenido ' + data.user.username + '!', 'success');
     setTimeout(() => location.href = 'dashboard.html', 1500);
     return true;
   } catch (error) {
     console.error('Login error:', error);
-    alert('Error en el login');
+    showToast('Error en el login', 'error');
     return false;
   }
 }
@@ -89,7 +103,6 @@ async function loginUser(username, password) {
 // Add to cart (integrated with cart.js)
 async function addToCartDB(productId, title, price, image) {
   if (!currentUser) {
-    // Fallback to localStorage if not logged in
     addToCart(productId, title, price, image);
     return;
   }
@@ -109,12 +122,10 @@ async function addToCartDB(productId, title, price, image) {
       throw new Error('Error adding to cart');
     }
     
-    alert('Agregado al carrito');
-    // Also sync with localStorage
+    showToast('Agregado al carrito', 'success');
     addToCart(productId, title, price, image);
   } catch (error) {
     console.error('Add to cart error:', error);
-    // Fallback to localStorage
     addToCart(productId, title, price, image);
   }
 }
@@ -137,7 +148,7 @@ async function getCartDB() {
 // Checkout
 async function checkoutDB() {
   if (!currentUser) {
-    alert('Debes iniciar sesión para comprar');
+    showToast('Debes iniciar sesión para comprar', 'error');
     return false;
   }
   
@@ -151,18 +162,18 @@ async function checkoutDB() {
     const data = await response.json();
     
     if (!response.ok) {
-      alert('Error: ' + data.error);
+      showToast('Error: ' + data.error, 'error');
       return false;
     }
     
-    alert('¡Pedido realizado! Total: $' + data.total.toFixed(2));
+    showToast('¡Pedido realizado! Total: $' + data.total.toFixed(2), 'success');
     localStorage.removeItem('gh_cart');
     renderCount();
     renderPanel();
     return true;
   } catch (error) {
     console.error('Checkout error:', error);
-    alert('Error al procesar el pago');
+    showToast('Error al procesar el pago', 'error');
     return false;
   }
 }
